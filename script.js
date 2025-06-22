@@ -68,9 +68,7 @@ function displayWeekDates() {
  */
 function displayWelcomeMessage() {
     // Placeholder username. In a real app, you'd fetch the user's actual name from Firebase.
-    // Assuming auth is available globally via firebase.js and index.html
-    const currentUser = firebase.auth().currentUser;
-    const username = currentUser ? currentUser.displayName || currentUser.email || "משתמש לא ידוע" : "אורח";
+    const username = "שמעון לוי"; // This should ideally be fetched from user data
     const welcomeDiv = document.createElement('div');
     welcomeDiv.className = "text-center text-xl font-semibold text-gray-700 mb-4";
     welcomeDiv.innerText = `ברוך הבא ${username}`;
@@ -165,9 +163,7 @@ async function populateSummaryData() {
                 // Ensure the shift and status exist in our aggregation objects
                 if (shiftCounts[shiftName] && shiftCounts[shiftName][status] !== undefined) {
                     shiftCounts[shiftName][status]++; // Increment count for the status
-                    if (!shiftNames[shiftName][status].includes(username)) { // Avoid duplicate names
-                        shiftNames[shiftName][status].push(username); // Add username to the list for this status
-                    }
+                    shiftNames[shiftName][status].push(username); // Add username to the list for this status
                 }
             }
         });

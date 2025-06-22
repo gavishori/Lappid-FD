@@ -105,14 +105,13 @@
         <p id="messageText"></p>
     </div>
 
-    <!-- Firebase SDKs - make sure these are before your custom scripts -->
+    <!-- Firebase SDKs - make sure these are before your script.js -->
     <!-- Using the compatibility version for global access -->
     <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-auth-compat.js"></script> <!-- Added auth for potential future use in main app -->
-
-    <!-- Your custom scripts -->
+    <!-- Your firebase.js script (now relies on global firebase object) -->
     <script src="firebase.js"></script>
+    <!-- Your main application script, loaded as a module -->
     <script type="module" src="script.js"></script>
 </body>
 </html>

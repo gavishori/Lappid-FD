@@ -16,7 +16,6 @@ const firebaseConfig = {
 // 'firebase' object is available globally because of the CDN scripts loaded in index.html
 const app = firebase.initializeApp(firebaseConfig);
 const db = app.firestore(); // Get Firestore instance using the compat API
-const auth = app.auth(); // Get Auth instance to get current user ID/name
 
 /**
  * Initializes Firebase related functionalities.
@@ -34,7 +33,6 @@ window.initFirebase = function() {
  * Reads the current state of the radio buttons from the form.
  * The attendance data is stored under a collection named "attendanceRecords".
  * Each document will contain the week's start/end dates, a timestamp, and the attendance data itself.
- * It now also includes the current user's display name if authenticated.
  */
 window.saveAttendanceData = async function() {
     const attendanceData = {};
@@ -46,21 +44,16 @@ window.saveAttendanceData = async function() {
     // Get current week dates to save with attendance, using the global function from script.js
     const { startDateFormatted, endDateFormatted } = window.getCurrentWeekDates();
 
-    // Get current user's display name if available
-    const currentUser = auth.currentUser;
-    const username = currentUser ? currentUser.displayName || currentUser.email || "משתמש לא ידוע" : "אורח";
-
     try {
         // Add a new document to the "attendanceRecords" collection
         await db.collection("attendanceRecords").add({
             weekStart: startDateFormatted,
             weekEnd: endDateFormatted,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Firestore server timestamp
-            username: username, // Save the username with the record
             data: attendanceData // Store the actual attendance data object
         });
         window.alertMessage("נתונים נשמרו בהצלחה!"); // Show success message
-        console.log("Attendance data saved:", attendanceData, "by user:", username);
+        console.log("Attendance data saved:", attendanceData);
     } catch (e) {
         console.error("Error saving attendance data: ", e);
         window.alertMessage("שגיאה בשמירת נתונים: " + e.message); // Show error message
@@ -74,12 +67,6 @@ window.saveAttendanceData = async function() {
  */
 window.loadAttendanceData = async function() {
     try {
-        // IMPORTANT: For a multi-user app, you might want to load data specific to the current user.
-        // For simplicity and matching previous behavior (loading any latest record),
-        // we're still loading the single latest record here.
-        // If you want user-specific loading, you'd filter by userId:
-        // .where("userId", "==", auth.currentUser.uid)
-
         const querySnapshot = await db.collection("attendanceRecords")
             .orderBy("timestamp", "desc") // Order by timestamp to get the latest record
             .limit(1) // Get only the most recent record
@@ -87,7 +74,7 @@ window.loadAttendanceData = async function() {
 
         if (!querySnapshot.empty) {
             const latestRecord = querySnapshot.docs[0].data(); // Get the data of the latest document
-            const loadedData = latestRecord.data; // Access the 'data' field
+            const loadedData = latestRecord.data; // Access the 'data' field within the document
 
             if (loadedData) {
                 console.log("Loading latest attendance data into form:", loadedData);
