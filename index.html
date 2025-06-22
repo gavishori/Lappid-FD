@@ -25,12 +25,13 @@
             .table-auto-cols td {
                 padding-left: 0.5rem; /* px-2 */
                 padding-right: 0.5rem; /* px-2 */
+                font-size: 0.875rem; /* text-sm for table cells on mobile */
             }
             .table-auto-cols td.text-sm-nowrap {
                  white-space: nowrap; /* Keep specific cells (like names) from wrapping on very small screens */
             }
             .table-auto-cols th {
-                font-size: 0.75rem; /* text-xs */
+                font-size: 0.875rem; /* text-sm for table headers on mobile */
             }
         }
 
@@ -61,12 +62,12 @@
         <!-- Attendance Input View -->
         <div id="attendance-view">
             <!-- Paragraph to display the dynamic date range -->
-            <p id="weekDates" class="text-center text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base"></p>
+            <p id="weekDates" class="text-center text-gray-600 mb-4 sm:mb-6 text-base sm:text-lg"></p>
 
             <div class="table-container"> <!-- Added a wrapper for overflow-x-auto -->
                 <table class="w-full bg-white border border-gray-200 rounded-lg table-auto-cols">
                     <thead>
-                        <tr class="bg-blue-600 text-white text-center text-xs sm:text-base">
+                        <tr class="bg-blue-600 text-white text-center text-sm sm:text-base">
                             <th class="py-2 px-1 sm:py-3 sm:px-4 text-right rounded-tl-lg">משמרת</th>
                             <th class="py-2 px-1 sm:py-3 sm:px-4">לא ידוע</th>
                             <th class="py-2 px-1 sm:py-3 sm:px-4">חלקי</th>
@@ -81,10 +82,10 @@
             </div>
 
             <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-                <button onclick="window.saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
+                <button onclick="window.saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-base sm:text-base w-full sm:w-auto">
                     שמור נתונים
                 </button>
-                <button onclick="window.switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
+                <button onclick="window.switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-base sm:text-base w-full sm:w-auto">
                     עבור לסיכום
                 </button>
             </div>
@@ -92,8 +93,8 @@
 
         <!-- Summary View -->
         <div id="summary-view" class="hidden">
-            <h1 class="text-xl sm:text-3xl font-bold text-center text-gray-800 mb-2">סיכום נוכחים</h1>
-            <p id="summaryWeekDates" class="text-center text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base"></p>
+            <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-2">סיכום נוכחים</h1>
+            <p id="summaryWeekDates" class="text-center text-gray-600 mb-4 sm:mb-6 text-base sm:text-lg"></p>
 
             <!-- Team Filter List -->
             <div class="mb-4 flex flex-col sm:flex-row justify-center items-center">
@@ -108,7 +109,7 @@
             <div class="table-container mb-6 sm:mb-8">
                 <table id="quantitySummaryTable" class="w-full bg-white border border-gray-200 rounded-lg table-auto-cols">
                     <thead>
-                        <tr class="bg-blue-600 text-white text-center text-xs sm:text-base">
+                        <tr class="bg-blue-600 text-white text-center text-sm sm:text-base">
                             <th class="py-2 px-1 sm:py-3 sm:px-4 text-right rounded-tl-lg">משמרת</th>
                             <th class="py-2 px-1 sm:py-3 sm:px-4">לא ידוע</th>
                             <th class="py-2 px-1 sm:py-3 sm:px-4">חלקי</th>
@@ -127,7 +128,7 @@
             <div class="table-container">
                 <table id="namesSummaryTable" class="w-full bg-white border border-gray-200 rounded-lg table-auto-cols">
                     <thead>
-                        <tr class="bg-blue-600 text-white text-center text-xs sm:text-base">
+                        <tr class="bg-blue-600 text-white text-center text-sm sm:text-base">
                             <th class="py-2 px-1 sm:py-3 sm:px-4 text-right rounded-tl-lg">משמרת</th>
                             <th class="py-2 px-1 sm:py-3 sm:px-4">לא ידוע</th>
                             <th class="py-2 px-1 sm:py-3 sm:px-4">חלקי</th>
@@ -142,10 +143,10 @@
             </div>
 
             <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
-                <button onclick="window.switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
+                <button onclick="window.switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-base sm:text-base w-full sm:w-auto">
                     חזור לדף הזנה
                 </button>
-                <button onclick="window.alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
+                <button onclick="window.alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-base sm:text-base w-full sm:w-auto">
                     הצג אנשים ללא נוכחות
                 </button>
             </div>

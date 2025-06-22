@@ -53,7 +53,7 @@ img, video, canvas {
     .table-auto-cols td {
         padding-left: 0.25rem; /* px-1 */
         padding-right: 0.25rem; /* px-1 */
-        font-size: 0.75rem; /* text-xs */
+        font-size: 0.875rem; /* Changed to text-sm (0.875rem) for table cells on mobile */
     }
 
     /* Override for specific columns that should break text */

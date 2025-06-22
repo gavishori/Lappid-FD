@@ -465,7 +465,6 @@ async function populateSummaryData(filterByTeam = null) {
             row.className = "border-b border-gray-200 hover:bg-gray-50 text-center";
             const names = shiftNames[shift.name]; // Get the names list for the current shift
             row.innerHTML = `
-                <td class="py-3 px-4 text-right">${shift.label}</td>
                 <td class="py-3 px-4 text-sm whitespace-normal">${names["לא ידוע"].join(', ')}</td>
                 <td class="py-3 px-4 text-sm whitespace-normal">${names["חלקי"].join(', ')}</td>
                 <td class="py-3 px-4 text-sm whitespace-normal">${names["נעדר"].join(', ')}</td>
