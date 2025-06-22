@@ -1,0 +1,61 @@
+/* login.css */
+
+/* Set body font and direction for Hebrew */
+body {
+    font-family: "Inter", sans-serif;
+    direction: rtl; /* Right-to-Left for Hebrew */
+}
+
+/* Basic styling for the login container */
+.login-container {
+    max-width: 448px; /* max-w-md is 28rem = 448px */
+    padding: 2rem; /* p-8 is 2rem */
+    border-radius: 0.75rem; /* rounded-xl is 0.75rem */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+}
+
+/* Specific styling for input fields to ensure rounded corners and padding */
+input[type="email"],
+input[type="password"],
+input[type="text"] {
+    border-width: 1px;
+    border-color: #e2e8f0; /* gray-300 */
+    padding: 0.75rem 1rem; /* py-3 px-4 */
+    border-radius: 0.5rem; /* rounded-lg */
+}
+
+/* Focus styles for inputs */
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="text"]:focus {
+    outline: none;
+    border-color: #3b82f6; /* blue-500 */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* ring-2 focus:ring-blue-500 */
+}
+
+/* Button general styling */
+button {
+    cursor: pointer;
+    border: none;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Specific button styling (from Tailwind classes in HTML) */
+.bg-blue-600 { background-color: #2563eb; }
+.hover\:bg-blue-700:hover { background-color: #1d4ed8; }
+.bg-green-600 { background-color: #16a34a; }
+.hover\:bg-green-700:hover { background-color: #15803d; }
+.rounded-full { border-radius: 9999px; } /* For pill-shaped buttons */
+.focus\:shadow-outline:focus { box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5); } /* Example focus ring for buttons */
+.hover\:scale-105:hover { transform: scale(1.05); } /* Zoom effect on hover */
+
+/* Message box styling */
+#authMessageBox {
+    background-color: #fee2e2; /* red-100 */
+    border-color: #fca5a5; /* red-400 */
+    color: #b91c1c; /* red-700 */
+    padding: 0.75rem 1rem; /* px-4 py-3 */
+    border-radius: 0.25rem; /* rounded */
+    margin-bottom: 1rem; /* mb-4 */
+}
