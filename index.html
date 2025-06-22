@@ -14,19 +14,18 @@
 
         <!-- Attendance Input View -->
         <div id="attendance-view">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">צוות כיבוי אש והצלה - לפיד</h1>
             <!-- Paragraph to display the dynamic date range -->
             <p id="weekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <div> <!-- Removed overflow-x-auto -->
+                <table class="w-full bg-white border border-gray-200 rounded-lg"> <!-- Changed min-w-full to w-full -->
                     <thead>
                         <tr class="bg-blue-600 text-white text-center">
-                            <th class="py-3 px-4 text-right rounded-tl-lg">משמרת</th>
-                            <th class="py-3 px-4">לא ידוע</th>
-                            <th class="py-3 px-4">חלקי</th>
-                            <th class="py-3 px-4">נעדר</th>
-                            <th class="py-3 px-4 rounded-tr-lg">נוכח</th>
+                            <th class="py-3 px-2 sm:px-4 text-right rounded-tl-lg">משמרת</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">לא ידוע</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">חלקי</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">נעדר</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4 rounded-tr-lg">נוכח</th> <!-- Adjusted px -->
                         </tr>
                     </thead>
                     <tbody>
@@ -51,9 +50,9 @@
             <p id="summaryWeekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
 
             <!-- Team Filter List -->
-            <div class="mb-4 text-center"> <!-- Changed to text-center for the container -->
-                <label class="block text-gray-700 text-sm font-bold mb-2">בחר צוות לסנן:</label> <!-- Removed ml-2, now block element -->
-                <div id="teamFilterList" class="flex flex-wrap gap-2 justify-center"> <!-- Changed justify-end to justify-center -->
+            <div class="mb-4 flex justify-center items-center"> <!-- text-center moved to flex justify-center -->
+                <label class="block text-gray-700 text-sm font-bold mb-2 ml-2">בחר צוות לסנן:</label>
+                <div id="teamFilterList" class="flex flex-wrap gap-2 justify-center">
                     <!-- Team buttons will be dynamically populated here -->
                 </div>
             </div>
@@ -62,14 +61,14 @@
             <!-- Table: לפי כמות -->
             <h2 class="text-2xl font-bold text-center text-gray-800 mt-8 mb-4">לפי כמות</h2>
             <div class="overflow-x-auto mb-8">
-                <table id="quantitySummaryTable" class="min-w-full bg-white border border-gray-200 rounded-lg">
+                <table id="quantitySummaryTable" class="w-full bg-white border border-gray-200 rounded-lg"> <!-- Changed min-w-full to w-full -->
                     <thead>
                         <tr class="bg-blue-600 text-white text-center">
-                            <th class="py-3 px-4 text-right rounded-tl-lg">משמרת</th>
-                            <th class="py-3 px-4">לא ידוע</th>
-                            <th class="py-3 px-4">חלקי</th>
-                            <th class="py-3 px-4">נעדר</th>
-                            <th class="py-3 px-4 rounded-tr-lg">נוכח</th>
+                            <th class="py-3 px-2 sm:px-4 text-right rounded-tl-lg">משמרת</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">לא ידוע</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">חלקי</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">נעדר</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4 rounded-tr-lg">נוכח</th> <!-- Adjusted px -->
                         </tr>
                     </thead>
                     <tbody>
@@ -81,14 +80,14 @@
             <!-- Table: לפי שמות -->
             <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">לפי שמות</h2>
             <div class="overflow-x-auto">
-                <table id="namesSummaryTable" class="min-w-full bg-white border border-gray-200 rounded-lg">
+                <table id="namesSummaryTable" class="w-full bg-white border border-gray-200 rounded-lg"> <!-- Changed min-w-full to w-full -->
                     <thead>
                         <tr class="bg-blue-600 text-white text-center">
-                            <th class="py-3 px-4 text-right rounded-tl-lg">משמרת</th>
-                            <th class="py-3 px-4">לא ידוע</th>
-                            <th class="py-3 px-4">חלקי</th>
-                            <th class="py-3 px-4">נעדר</th>
-                            <th class="py-3 px-4 rounded-tr-lg">נוכח</th>
+                            <th class="py-3 px-2 sm:px-4 text-right rounded-tl-lg">משמרת</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">לא ידוע</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">חלקי</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4">נעדר</th> <!-- Adjusted px -->
+                            <th class="py-3 px-2 sm:px-4 rounded-tr-lg">נוכח</th> <!-- Adjusted px -->
                         </tr>
                     </thead>
                     <tbody>

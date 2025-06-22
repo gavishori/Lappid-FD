@@ -197,7 +197,7 @@ window.displayTeamFilterList = function() {
 
     // Hardcode the known roles as options for the filter
     // Removed "כל הקבוצות" from here
-    const allTeams = ["כיבוי אש חילוץ והצלה", "הנרי לרפואה", "תורני חפ\"ק"];
+    const allTeams = ["כיבוי אש חילוץ והצלה", "הנרי לרפואה", "תורני חפק"];
 
     allTeams.forEach(team => {
         const teamButton = document.createElement('button');
