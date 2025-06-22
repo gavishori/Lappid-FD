@@ -73,7 +73,7 @@ img, video, canvas {
     /* Set explicit widths for columns in the attendance input table */
     #attendance-view .table-auto-cols th:nth-child(1),
     #attendance-view .table-auto-cols td:nth-child(1) {
-        width: 30%; /* Width for the "משמרת" (shift) column */
+        width: 25%; /* Reduced width for the "משמרת" (shift) column */
     }
     #attendance-view .table-auto-cols th:nth-child(2),
     #attendance-view .table-auto-cols td:nth-child(2),
@@ -83,7 +83,7 @@ img, video, canvas {
     #attendance-view .table-auto-cols td:nth-child(4),
     #attendance-view .table-auto-cols th:nth-child(5),
     #attendance-view .table-auto-cols td:nth-child(5) {
-        width: 17.5%; /* Width for the four status columns (לא ידוע, חלקי, נעדר, נוכח) */
+        width: 18.75%; /* Increased width for the four status columns to fill 100% (4 * 18.75% = 75%) */
     }
 
     /* Override for specific columns that should break text (less critical now but kept for consistency) */
