@@ -1,0 +1,41 @@
+/* Custom Styles */
+body {
+    font-family: "Inter", sans-serif;
+    direction: rtl; /* Set text direction to Right-to-Left for Hebrew */
+}
+
+/* Style for radio buttons */
+input[type="radio"] {
+    /* Basic reset, Tailwind handles most styling */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border: 2px solid #60A5FA; /* Blue border */
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    vertical-align: middle;
+    margin: 0; /* Remove default margin */
+    display: inline-block; /* Ensure it respects width/height */
+}
+
+input[type="radio"]:checked {
+    background-color: #3B82F6; /* Blue fill */
+    border-color: #3B82F6;
+}
+
+input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: white; /* White dot */
+    display: block;
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>טבלת נוכחות</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+    <div class="container mx-auto p-6 bg-white rounded-xl shadow-lg w-full max-w-4xl">
+
+        <!-- Attendance Input View -->
+        <div id="attendance-view">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">צוות כיבוי אש והצלה - לפיד</h1>
+            <!-- Paragraph to display the dynamic date range -->
+            <p id="weekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead>
+                        <tr class="bg-blue-600 text-white text-center">
+                            <th class="py-3 px-4 text-right rounded-tl-lg">משמרת</th>
+                            <th class="py-3 px-4">לא ידוע</th>
+                            <th class="py-3 px-4">חלקי</th>
+                            <th class="py-3 px-4">נעדר</th>
+                            <th class="py-3 px-4 rounded-tr-lg">נוכח</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Shifts data will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-8 flex justify-center gap-4">
+                <button onclick="saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    שמור נתונים
+                </button>
+                <button onclick="switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    עבור לסיכום
+                </button>
+            </div>
+        </div>
+
+        <!-- Summary View -->
+        <div id="summary-view" class="hidden">
+            <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">סיכום נוכחים</h1>
+            <p id="summaryWeekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
+
+            <!-- Table: לפי כמות -->
+            <h2 class="text-2xl font-bold text-center text-gray-800 mt-8 mb-4">לפי כמות</h2>
+            <div class="overflow-x-auto mb-8">
+                <table id="quantitySummaryTable" class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead>
+                        <tr class="bg-blue-600 text-white text-center">
+                            <th class="py-3 px-4 text-right rounded-tl-lg">משמרת</th>
+                            <th class="py-3 px-4">לא ידוע</th>
+                            <th class="py-3 px-4">חלקי</th>
+                            <th class="py-3 px-4">נעדר</th>
+                            <th class="py-3 px-4 rounded-tr-lg">נוכח</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Quantity summary data will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table: לפי שמות -->
+            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">לפי שמות</h2>
+            <div class="overflow-x-auto">
+                <table id="namesSummaryTable" class="min-w-full bg-white border border-gray-200 rounded-lg">
+                    <thead>
+                        <tr class="bg-blue-600 text-white text-center">
+                            <th class="py-3 px-4 text-right rounded-tl-lg">משמרת</th>
+                            <th class="py-3 px-4">לא ידוע</th>
+                            <th class="py-3 px-4">חלקי</th>
+                            <th class="py-3 px-4">נעדר</th>
+                            <th class="py-3 px-4 rounded-tr-lg">נוכח</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Names summary data will be injected here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-8 flex justify-center gap-4">
+                <button onclick="switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    חזור לדף הזנה
+                </button>
+                <button onclick="alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                    הצג אנשים ללא נוכחות
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Custom Message Box -->
+    <div id="messageBox" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-center p-3 rounded-lg shadow-xl hidden z-50">
+        <p id="messageText"></p>
+    </div>
+
+    <!-- Firebase and main application scripts -->
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+</html>
