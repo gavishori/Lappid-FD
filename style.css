@@ -62,10 +62,10 @@ img, video, canvas {
 
     #attendance-view .table-auto-cols th,
     #attendance-view .table-auto-cols td {
-        padding-left: 0.1rem; /* Reduced padding for compact layout on mobile */
-        padding-right: 0.1rem; /* Reduced padding for compact layout on mobile */
+        padding-left: 0.05rem; /* Further reduced padding for ultra compact layout on mobile */
+        padding-right: 0.05rem; /* Further reduced padding for ultra compact layout on mobile */
         font-size: 1rem; /* Kept at 1rem for readability as requested */
-        white-space: normal; /* Allow text to wrap within cells */
+        white-space: normal; /* Allow text to wrap within cells by default */
         overflow: hidden; /* Hide any content that still overflows */
         text-overflow: ellipsis; /* Add ellipsis (...) for overflowing text */
     }
@@ -73,7 +73,7 @@ img, video, canvas {
     /* Set explicit widths for columns in the attendance input table */
     #attendance-view .table-auto-cols th:nth-child(1),
     #attendance-view .table-auto-cols td:nth-child(1) {
-        width: 25%; /* Reduced width for the "משמרת" (shift) column */
+        width: 20%; /* Reduced width for the "משמרת" (shift) column by 20% of its current 25% */
     }
     #attendance-view .table-auto-cols th:nth-child(2),
     #attendance-view .table-auto-cols td:nth-child(2),
@@ -83,7 +83,7 @@ img, video, canvas {
     #attendance-view .table-auto-cols td:nth-child(4),
     #attendance-view .table-auto-cols th:nth-child(5),
     #attendance-view .table-auto-cols td:nth-child(5) {
-        width: 18.75%; /* Increased width for the four status columns to fill 100% (4 * 18.75% = 75%) */
+        width: 20%; /* Adjusted width for the four status columns to fill remaining 80% (4 * 20% = 80%) */
     }
 
     /* Override for specific columns that should break text (less critical now but kept for consistency) */
@@ -93,6 +93,17 @@ img, video, canvas {
 
     /* Adjust padding for labels containing radio buttons for tighter fit */
     .radio-label {
-        padding: 0.1rem; /* Even smaller padding for radio button labels */
+        padding: 0.05rem; /* Even smaller padding for radio button labels */
+        display: flex; /* Use flexbox */
+        flex-direction: column-reverse; /* Stack items vertically, radio button at the bottom */
+        align-items: center; /* Center items horizontally in the column */
+        text-align: center; /* Center text within the label */
+    }
+
+    /* Ensure the text "לא ידוע" stays on one line */
+    #attendance-view .radio-label span.ml-2.text-gray-700 {
+        white-space: nowrap; /* Prevent text from wrapping */
+        margin-left: 0; /* Remove left margin from span for tighter fit */
+        margin-right: 0; /* Ensure no right margin either */
     }
 }
