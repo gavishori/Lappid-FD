@@ -1,5 +1,7 @@
-// Imports from firebase.js
-import { initFirebase, saveAttendanceData, loadAttendanceData } from './firebase.js';
+// script.js
+// Firebase functions (initFirebase, saveAttendanceData, loadAttendanceData)
+// are now expected to be available globally on the 'window' object,
+// defined in firebase.js after Firebase SDKs are loaded via CDN.
 
 /**
  * Formats a Date object into a DD/MM/YYYY string.
@@ -22,6 +24,8 @@ export function getCurrentWeekDates() {
     let dayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
 
     // Calculate the date of the most recent Saturday (or today if it's Saturday)
+    // If today is Saturday (6), daysToSubtract is 0. Otherwise, it's (dayOfWeek + 1)
+    // to go back to the previous Saturday.
     const daysToSubtract = (dayOfWeek === 6) ? 0 : (dayOfWeek + 1);
 
     const startDate = new Date(today);
@@ -37,6 +41,9 @@ export function getCurrentWeekDates() {
 
     return { startDate, endDate, startDateFormatted, endDateFormatted };
 }
+
+// Expose getCurrentWeekDates to the global scope for firebase.js to use
+window.getCurrentWeekDates = getCurrentWeekDates;
 
 /**
  * Displays the current week's dates in the HTML.
@@ -61,7 +68,9 @@ function displayWeekDates() {
  */
 function displayWelcomeMessage() {
     // Placeholder username. In a real app, you'd fetch the user's actual name from Firebase.
-    const username = "שמעון לוי"; // This should ideally be fetched from user data
+    // Assuming auth is available globally via firebase.js and index.html
+    const currentUser = firebase.auth().currentUser;
+    const username = currentUser ? currentUser.displayName || currentUser.email || "משתמש לא ידוע" : "אורח";
     const welcomeDiv = document.createElement('div');
     welcomeDiv.className = "text-center text-xl font-semibold text-gray-700 mb-4";
     welcomeDiv.innerText = `ברוך הבא ${username}`;
@@ -94,88 +103,113 @@ window.switchView = function(viewId) {
 };
 
 /**
- * Populates the summary tables with mock data (based on provided images).
- * In a real multi-user app, this would involve fetching and aggregating data from all users
- * from Firestore, based on the `attendanceRecords` collection, potentially from a `public` subcollection
- * if data is meant to be shared.
+ * Populates the summary tables by fetching and aggregating data from Firestore.
+ * This function will now dynamically calculate counts and list names based on
+ * the attendance records stored in Firebase.
  */
-function populateSummaryData() {
+async function populateSummaryData() {
     displayWeekDates(); // Ensure dates are updated on summary view
 
-    // Mock Data for "לפי כמות" (By Quantity) - based on image WhatsApp Image 2025-06-22 at 13.02.02 (1).jpeg
-    const quantitySummaryData = [
-        { shift: "ראשון בוקר", present: 3, absent: 0, partial: 0, unknown: 0 },
-        { shift: "ראשון ערב", present: 3, absent: 0, partial: 0, unknown: 0 },
-        { shift: "שני בוקר", present: 1, absent: 1, partial: 1, unknown: 0 },
-        { shift: "שני ערב", present: 3, absent: 0, partial: 0, unknown: 0 },
-        { shift: "שלישי בוקר", present: 2, absent: 0, partial: 0, unknown: 1 },
-        { shift: "שלישי ערב", present: 3, absent: 0, partial: 0, unknown: 0 },
-        { shift: "רביעי בוקר", present: 1, absent: 1, partial: 1, unknown: 1 },
-        { shift: "רביעי ערב", present: 3, absent: 0, partial: 0, unknown: 0 },
-        { shift: "חמישי בוקר", present: 2, absent: 1, partial: 0, unknown: 0 },
-        { shift: "חמישי ערב", present: 3, absent: 0, partial: 0, unknown: 0 },
-        { shift: "שישי בוקר", present: 2, absent: 0, partial: 1, unknown: 0 },
-        { shift: "שישי ערב", present: 1, absent: 0, partial: 2, unknown: 0 },
-        { shift: "שבת בוקר", present: 1, absent: 0, partial: 2, unknown: 0 },
-        { shift: "שבת ערב", present: 2, absent: 0, partial: 1, unknown: 0 },
+    const quantityTableBody = document.querySelector('#quantitySummaryTable tbody');
+    const namesTableBody = document.querySelector('#namesSummaryTable tbody');
+
+    // Clear previous data from tables
+    if (quantityTableBody) quantityTableBody.innerHTML = '';
+    if (namesTableBody) namesTableBody.innerHTML = '';
+
+    // Define all possible shifts to ensure all rows are displayed, even if no data exists for them
+    const shiftsData = [
+        { name: "שבת בוקר_1", label: "שבת בוקר" },
+        { name: "שבת ערב_1", label: "שבת ערב" },
+        { name: "ראשון בוקר", label: "ראשון בוקר" },
+        { name: "ראשון ערב", label: "ראשון ערב" },
+        { name: "שני בוקר", label: "שני בוקר" },
+        { name: "שני ערב", label: "שני ערב" },
+        { name: "שלישי בוקר", label: "שלישי בוקר" },
+        { name: "שלישי ערב", label: "שלישי ערב" },
+        { name: "רביעי בוקר", label: "רביעי בוקר" },
+        { name: "רביעי ערב", label: "רביעי ערב" },
+        { name: "חמישי בוקר", label: "חמישי בוקר" },
+        { name: "חמישי ערב", label: "חמישי ערב" },
+        { name: "שישי בוקר", label: "שישי בוקר" },
+        { name: "שישי ערב", label: "שישי ערב" },
+        { name: "שבת בוקר_2", label: "שבת בוקר" },
+        { name: "שבת ערב_2", label: "שבת ערב" }
     ];
 
-    const quantityTableBody = document.querySelector('#quantitySummaryTable tbody');
-    if (quantityTableBody) {
-        quantityTableBody.innerHTML = ''; // Clear previous data
-        quantitySummaryData.forEach(data => {
+    // Initialize aggregation objects for both quantity and names summaries
+    const shiftCounts = {}; // Stores counts for each status per shift (e.g., { "ראשון בוקר": { "נוכח": 3, ... } })
+    const shiftNames = {}; // Stores arrays of names for each status per shift (e.g., { "ראשון בוקר": { "נוכח": ["אורי", "אדיר"], ... } })
+
+    // Populate initial structure for all shifts with zero counts and empty name arrays
+    shiftsData.forEach(shift => {
+        shiftCounts[shift.name] = { "נוכח": 0, "נעדר": 0, "חלקי": 0, "לא ידוע": 0 };
+        shiftNames[shift.name] = { "נוכח": [], "נעדר": [], "חלקי": [], "לא ידוע": [] };
+    });
+
+    try {
+        // Fetch all attendance records from Firestore
+        // Assuming 'db' is globally available from firebase.js
+        const querySnapshot = await db.collection("attendanceRecords").get();
+
+        // Iterate over each document (attendance record) fetched from Firestore
+        querySnapshot.forEach(doc => {
+            const record = doc.data(); // Get the data from the document
+            const attendanceData = record.data; // This 'data' object holds shift status (e.g., {"שבת בוקר_1": "נוכח"})
+            const username = record.username || "משתמש אנונימי"; // Get username, default if not present
+
+            // Process attendance data for each shift in the current record
+            for (const shiftName in attendanceData) {
+                const status = attendanceData[shiftName]; // Get the status for the current shift
+
+                // Ensure the shift and status exist in our aggregation objects
+                if (shiftCounts[shiftName] && shiftCounts[shiftName][status] !== undefined) {
+                    shiftCounts[shiftName][status]++; // Increment count for the status
+                    if (!shiftNames[shiftName][status].includes(username)) { // Avoid duplicate names
+                        shiftNames[shiftName][status].push(username); // Add username to the list for this status
+                    }
+                }
+            }
+        });
+
+        // Populate "לפי כמות" (By Quantity) table using aggregated data
+        shiftsData.forEach(shift => {
             const row = document.createElement('tr');
             row.className = "border-b border-gray-200 hover:bg-gray-50 text-center";
+            const counts = shiftCounts[shift.name]; // Get the counts for the current shift
             row.innerHTML = `
-                <td class="py-3 px-4 text-right">${data.shift}</td>
-                <td class="py-3 px-4">${data.unknown}</td>
-                <td class="py-3 px-4">${data.partial}</td>
-                <td class="py-3 px-4">${data.absent}</td>
-                <td class="py-3 px-4">${data.present}</td>
+                <td class="py-3 px-4 text-right">${shift.label}</td>
+                <td class="py-3 px-4">${counts["לא ידוע"]}</td>
+                <td class="py-3 px-4">${counts["חלקי"]}</td>
+                <td class="py-3 px-4">${counts["נעדר"]}</td>
+                <td class="py-3 px-4">${counts["נוכח"]}</td>
             `;
             quantityTableBody.appendChild(row);
         });
-    }
 
-
-    // Mock Data for "לפי שמות" (By Names) - based on image WhatsApp Image 2025-06-22 at 13.02.02.jpeg
-    const namesSummaryData = [
-        { shift: "ראשון בוקר", present: "אדיר מנצור, אורי גביש, אילן דביר", absent: "", partial: "", unknown: "" },
-        { shift: "ראשון ערב", present: "אדיר מנצור, אורי גביש, אילן דביר", absent: "", partial: "", unknown: "" },
-        { shift: "שני בוקר", present: "אורי גביש", absent: "אדיר מנצור", partial: "אילן דביר", unknown: "" },
-        { shift: "שני ערב", present: "אדיר מנצור, אורי גביש, אילן דביר", absent: "", partial: "", unknown: "" },
-        { shift: "שלישי בוקר", present: "אדיר מנצור, אורי גביש", absent: "", partial: "", unknown: "אילן דביר" },
-        { shift: "שלישי ערב", present: "אדיר מנצור, אורי גביש, אילן דביר", absent: "", partial: "", unknown: "" },
-        { shift: "רביעי בוקר", present: "אורי גביש", absent: "אדיר מנצור", partial: "אילן דביר", unknown: "" },
-        { shift: "רביעי ערב", present: "אדיר מנצור, אורי גביש, אילן דביר", absent: "", partial: "", unknown: "" },
-        { shift: "חמישי בוקר", present: "אדיר מנצור, אורי גביש", absent: "אילן דביר", partial: "", unknown: "" },
-        { shift: "חמישי ערב", present: "אדיר מנצור, אורי גביש, אילן דביר", absent: "", partial: "", unknown: "" },
-        { shift: "שישי בוקר", present: "אדיר מנצור, אורי גביש", absent: "", partial: "אילן דביר", unknown: "" },
-        { shift: "שישי ערב", present: "אדיר מנצור", absent: "", partial: "אורי גביש, אילן דביר", unknown: "" },
-        { shift: "שבת בוקר", present: "אורי גביש", absent: "", partial: "אדיר מנצור, אילן דביר", unknown: "" },
-        { shift: "שבת ערב", present: "אדיר מנצור, אורי גביש", absent: "", partial: "אילן דביר", unknown: "" },
-    ];
-
-    const namesTableBody = document.querySelector('#namesSummaryTable tbody');
-    if (namesTableBody) {
-        namesTableBody.innerHTML = ''; // Clear previous data
-        namesSummaryData.forEach(data => {
+        // Populate "לפי שמות" (By Names) table using aggregated data
+        shiftsData.forEach(shift => {
             const row = document.createElement('tr');
             row.className = "border-b border-gray-200 hover:bg-gray-50 text-center";
+            const names = shiftNames[shift.name]; // Get the names list for the current shift
             row.innerHTML = `
-                <td class="py-3 px-4 text-right">${data.shift}</td>
-                <td class="py-3 px-4 text-sm whitespace-normal">${data.unknown}</td>
-                <td class="py-3 px-4 text-sm whitespace-normal">${data.partial}</td>
-                <td class="py-3 px-4 text-sm whitespace-normal">${data.absent}</td>
-                <td class="py-3 px-4 text-sm whitespace-normal">${data.present}</td>
+                <td class="py-3 px-4 text-right">${shift.label}</td>
+                <td class="py-3 px-4 text-sm whitespace-normal">${names["לא ידוע"].join(', ')}</td>
+                <td class="py-3 px-4 text-sm whitespace-normal">${names["חלקי"].join(', ')}</td>
+                <td class="py-3 px-4 text-sm whitespace-normal">${names["נעדר"].join(', ')}</td>
+                <td class="py-3 px-4 text-sm whitespace-normal">${names["נוכח"].join(', ')}</td>
             `;
             namesTableBody.appendChild(row);
         });
+
+    } catch (e) {
+        console.error("Error populating summary data from Firestore: ", e);
+        window.alertMessage("שגיאה בטעינת נתוני סיכום: " + e.message);
     }
 }
 
 /**
- * Dynamically generates the attendance table rows.
+ * Dynamically generates the attendance table rows for the input form.
  */
 function generateAttendanceTableRows() {
     const shiftsData = [
@@ -253,9 +287,10 @@ window.alertMessage = function(message) {
 document.addEventListener('DOMContentLoaded', () => {
     generateAttendanceTableRows(); // Generate rows dynamically
     displayWeekDates(); // Display current week's dates
-    initFirebase(); // Initialize Firebase and trigger data load/welcome message
+    displayWelcomeMessage(); // Display welcome message
+    window.initFirebase(); // Initialize Firebase and trigger data load/welcome message
     window.switchView('attendance-view'); // Show attendance view by default
 });
 
-// Expose functions to the global scope for HTML event handlers
-window.saveAttendanceData = saveAttendanceData;
+// window.saveAttendanceData and window.loadAttendanceData are now defined in firebase.js
+// and automatically exposed to the global window object.
