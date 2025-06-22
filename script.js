@@ -63,18 +63,45 @@ function displayWeekDates() {
 }
 
 /**
- * Displays the welcome message with a placeholder username.
- * In a real app, this would come from user data fetched from Firebase.
+ * Displays the welcome message with the authenticated user's name.
  */
 function displayWelcomeMessage() {
-    // Placeholder username. In a real app, you'd fetch the user's actual name from Firebase.
-    const username = "שמעון לוי"; // This should ideally be fetched from user data
-    const welcomeDiv = document.createElement('div');
-    welcomeDiv.className = "text-center text-xl font-semibold text-gray-700 mb-4";
-    welcomeDiv.innerText = `ברוך הבא ${username}`;
     const container = document.querySelector('.container');
-    if (container) {
-        container.prepend(welcomeDiv); // Add to the top of the container
+    if (!container) {
+        console.warn("Container element not found for welcome message.");
+        return;
+    }
+
+    // Use onAuthStateChanged from the globally exposed 'auth' object
+    if (typeof window.auth !== 'undefined') {
+        window.auth.onAuthStateChanged(user => {
+            let username = "אורח"; // Default for unauthenticated users
+            if (user) {
+                if (user.displayName) {
+                    username = user.displayName;
+                } else if (user.email) {
+                    username = user.email; // Fallback to email if displayName is not set
+                }
+            }
+
+            // Remove any existing welcome message before creating a new one
+            const existingWelcome = container.querySelector('.text-center.text-xl.font-semibold.text-gray-700.mb-4');
+            if (existingWelcome) {
+                existingWelcome.remove();
+            }
+
+            const welcomeDiv = document.createElement('div');
+            welcomeDiv.className = "text-center text-xl font-semibold text-gray-700 mb-4";
+            welcomeDiv.innerText = `ברוך הבא ${username}`;
+            container.prepend(welcomeDiv);
+        });
+    } else {
+        // Fallback if Firebase auth is not initialized or available (should not happen if firebase.js loads first)
+        console.warn("Firebase auth not available. Displaying generic welcome message.");
+        const welcomeDiv = document.createElement('div');
+        welcomeDiv.className = "text-center text-xl font-semibold text-gray-700 mb-4";
+        welcomeDiv.innerText = `ברוך הבא`;
+        container.prepend(welcomeDiv);
     }
 }
 
