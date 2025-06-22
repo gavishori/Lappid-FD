@@ -118,13 +118,19 @@ function displayWelcomeMessage() {
     // Use onAuthStateChanged to ensure we have the user state
     if (typeof window.auth !== 'undefined') { // Use window.auth
         window.auth.onAuthStateChanged(user => {
-            let username = "אורח"; // Default for unauthenticated users
+            let username = "אורח"; // Default for unauthenticated users, will be overwritten if user exists
             if (user) {
                 if (user.displayName) {
                     username = user.displayName;
                 } else if (user.email) {
                     username = user.email; // Fallback to email if displayName is not set
                 }
+            } else {
+                // If no user is logged in, redirect to login page
+                if (window.location.pathname !== '/login.html') { // Prevent infinite redirects
+                    window.location.href = 'login.html';
+                }
+                return; // Stop execution if not authenticated
             }
 
             // Remove any existing welcome message before creating a new one
@@ -141,10 +147,11 @@ function displayWelcomeMessage() {
     } else {
         // Fallback if Firebase auth is not initialized or available (should not happen if firebase.js loads first)
         console.warn("Firebase auth not available. Displaying generic welcome message.");
-        const welcomeDiv = document.createElement('div');
-        welcomeDiv.className = "text-center text-xl font-semibold text-gray-700 mb-4";
-        welcomeDiv.innerText = `ברוך הבא`;
-        container.prepend(welcomeDiv);
+        // Redirect to login if Firebase Auth is not available
+        if (window.location.pathname !== '/login.html') {
+            window.location.href = 'login.html';
+        }
+        return;
     }
 }
 
