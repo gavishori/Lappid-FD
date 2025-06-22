@@ -10,41 +10,91 @@
     <link rel="stylesheet" href="login.css">
 </head>
 <body class="flex items-center justify-center min-h-screen bg-gray-100">
-    <div class="login-container bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 class="text-3xl font-bold text-center text-gray-800 mb-6">ברוך הבא!</h1>
+    <div class="login-container bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-right">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">ברוך הבא!</h1>
 
-        <!-- Name input field (only for signup) -->
+        <!-- Email input field for Login -->
         <div class="mb-4">
-            <label for="name" class="block text-gray-700 text-right text-sm font-bold mb-2">שם מלא:</label>
-            <input type="text" id="name" placeholder="הכנס את שמך המלא"
+            <label for="loginEmail" class="block text-gray-700 text-sm font-bold mb-2">אימייל:</label>
+            <input type="email" id="loginEmail" placeholder="הכנס את האימייל שלך"
                    class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" dir="rtl">
         </div>
 
-        <!-- Email input field -->
-        <div class="mb-4">
-            <label for="email" class="block text-gray-700 text-right text-sm font-bold mb-2">אימייל:</label>
-            <input type="email" id="email" placeholder="הכנס את האימייל שלך"
-                   class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" dir="rtl">
-        </div>
-
-        <!-- Password input field -->
+        <!-- Password input field for Login -->
         <div class="mb-6">
-            <label for="password" class="block text-gray-700 text-right text-sm font-bold mb-2">סיסמה:</label>
-            <input type="password" id="password" placeholder="הכנס את הסיסמה שלך"
+            <label for="loginPassword" class="block text-gray-700 text-sm font-bold mb-2">סיסמה:</label>
+            <input type="password" id="loginPassword" placeholder="הכנס את הסיסמה שלך"
                    class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" dir="rtl">
         </div>
 
-        <!-- Message Box for alerts -->
+        <!-- Message Box for login alerts -->
         <div id="authMessageBox" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-right" role="alert">
             <span id="authMessageText" class="block sm:inline"></span>
         </div>
 
-        <!-- Buttons for Login and Signup -->
+        <!-- Buttons for Login and Open Signup Pop-up -->
         <div class="flex flex-col gap-4">
             <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105">
                 התחבר
             </button>
-            <button id="signupBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105">
+            <button id="openSignupPopupBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105">
+                הרשמה
+            </button>
+        </div>
+    </div>
+
+    <!-- Signup Pop-up (Modal) -->
+    <div id="signupModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50 p-4">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-right relative">
+            <button id="closeSignupModalBtn" class="absolute top-4 left-4 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">הרשמה</h2>
+
+            <!-- Name input field for Signup -->
+            <div class="mb-4">
+                <label for="signupName" class="block text-gray-700 text-sm font-bold mb-2">שם מלא:</label>
+                <input type="text" id="signupName" placeholder="הכנס את שמך המלא"
+                       class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" dir="rtl">
+            </div>
+
+            <!-- Email input field for Signup -->
+            <div class="mb-4">
+                <label for="signupEmail" class="block text-gray-700 text-sm font-bold mb-2">אימייל:</label>
+                <input type="email" id="signupEmail" placeholder="הכנס את האימייל שלך"
+                       class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" dir="rtl">
+            </div>
+
+            <!-- Password input field for Signup -->
+            <div class="mb-6">
+                <label for="signupPassword" class="block text-gray-700 text-sm font-bold mb-2">סיסמה:</label>
+                <input type="password" id="signupPassword" placeholder="הכנס את הסיסמה שלך"
+                       class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-right" dir="rtl">
+            </div>
+
+            <!-- Team Checkboxes for Signup -->
+            <div class="mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">בחר צוות (ניתן לבחור יותר מאחד):</label>
+                <div class="flex flex-col space-y-2 items-end">
+                    <label class="inline-flex items-center cursor-pointer flex-row-reverse">
+                        <input type="checkbox" id="signupRoleFirefighting" value="כיבוי אש חילוץ והצלה" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                        <span class="mr-2 text-gray-700">כיבוי אש חילוץ והצלה</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer flex-row-reverse">
+                        <input type="checkbox" id="signupRoleMedical" value="הנרי לרפואה" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                        <span class="mr-2 text-gray-700">הנרי לרפואה</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer flex-row-reverse">
+                        <input type="checkbox" id="signupRoleHafak" value="תורני חפ"ק" class="form-checkbox h-5 w-5 text-blue-600 rounded">
+                        <span class="mr-2 text-gray-700">תורני חפ"ק</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Message Box for signup alerts -->
+            <div id="signupMessageBox" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 text-right" role="alert">
+                <span id="signupMessageText" class="block sm:inline"></span>
+            </div>
+
+            <button id="registerBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline transition duration-300 ease-in-out transform hover:scale-105 w-full">
                 הירשם
             </button>
         </div>
@@ -53,6 +103,7 @@
     <!-- Firebase SDKs - These are essential for authentication -->
     <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore-compat.js"></script>
     <!-- Your login script -->
     <script src="login.js"></script>
 </body>

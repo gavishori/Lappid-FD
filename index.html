@@ -36,10 +36,10 @@
             </div>
 
             <div class="mt-8 flex justify-center gap-4">
-                <button onclick="saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <button onclick="window.saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
                     שמור נתונים
                 </button>
-                <button onclick="switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <button onclick="window.switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
                     עבור לסיכום
                 </button>
             </div>
@@ -49,6 +49,15 @@
         <div id="summary-view" class="hidden">
             <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">סיכום נוכחים</h1>
             <p id="summaryWeekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
+
+            <!-- Team Filter List -->
+            <div class="mb-4 text-center"> <!-- Changed to text-center for the container -->
+                <label class="block text-gray-700 text-sm font-bold mb-2">בחר צוות לסנן:</label> <!-- Removed ml-2, now block element -->
+                <div id="teamFilterList" class="flex flex-wrap gap-2 justify-center"> <!-- Changed justify-end to justify-center -->
+                    <!-- Team buttons will be dynamically populated here -->
+                </div>
+            </div>
+
 
             <!-- Table: לפי כמות -->
             <h2 class="text-2xl font-bold text-center text-gray-800 mt-8 mb-4">לפי כמות</h2>
@@ -89,10 +98,10 @@
             </div>
 
             <div class="mt-8 flex justify-center gap-4">
-                <button onclick="switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <button onclick="window.switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
                     חזור לדף הזנה
                 </button>
-                <button onclick="alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <button onclick="window.alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
                     הצג אנשים ללא נוכחות
                 </button>
             </div>
@@ -108,7 +117,7 @@
     <!-- Firebase SDKs - make sure these are before your script.js -->
     <!-- Using the compatibility version for global access -->
     <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-auth-compat.js"></script> <!-- Added Firebase Auth -->
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore-compat.js"></script>
     <!-- Your firebase.js script (now relies on global firebase object) -->
     <script src="firebase.js"></script>

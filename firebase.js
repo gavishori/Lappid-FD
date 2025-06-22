@@ -18,9 +18,9 @@ const app = firebase.initializeApp(firebaseConfig);
 const db = app.firestore(); // Get Firestore instance using the compat API
 const auth = app.auth(); // Get Auth instance using the compat API and expose it
 
-// Expose auth globally for easier access in other scripts
+// Expose auth and db globally for easier access in other scripts
 window.auth = auth;
-
+window.db = db;
 
 /**
  * Initializes Firebase related functionalities.
@@ -36,6 +36,14 @@ window.initFirebase = function() {
             window.loadAttendanceData(user.uid); // Pass UID to load specific data
         } else {
             console.log("No user signed in. Cannot load user-specific attendance data.");
+        }
+        // Always populate team filter list and switch view after auth state is determined
+        // This ensures Firebase (db and auth) are ready for populateSummaryData as well
+        if (typeof window.displayTeamFilterList === 'function') {
+            window.displayTeamFilterList(); // Populate the new team filter list
+        }
+        if (typeof window.switchView === 'function') {
+            window.switchView('attendance-view'); // Show attendance view by default
         }
     });
 };
@@ -67,15 +75,27 @@ window.saveAttendanceData = async function() {
     // Create a unique document ID using user UID and week start date
     const docId = `${startDateFormatted.replace(/\//g, '-')}_${user.uid}`;
 
+    let userRoles = [];
+    try {
+        const userRolesDoc = await window.db.collection("userRoles").doc(user.uid).get(); // Use window.db
+        if (userRolesDoc.exists) {
+            userRoles = userRolesDoc.data().roles || [];
+        }
+    } catch (e) {
+        console.error("Error fetching user roles for saving attendance: ", e); // Added error logging
+        // Continue saving attendance even if roles cannot be fetched, but log the error
+    }
+
     try {
         // Use set() with merge:true to update an existing document or create a new one
-        await db.collection("attendanceRecords").doc(docId).set({
+        await window.db.collection("attendanceRecords").doc(docId).set({ // Use window.db
             weekStart: startDateFormatted,
             weekEnd: endDateFormatted,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(), // Firestore server timestamp
             data: attendanceData, // Store the actual attendance data object
             userId: user.uid, // Store the user's UID
-            username: user.displayName || user.email // Store the user's display name or email
+            username: user.displayName || user.email, // Store the user's display name or email
+            userRoles: userRoles // Store the user's roles
         }, { merge: true }); // Merge ensures other fields are not overwritten if the document exists
 
         window.alertMessage("נתונים נשמרו בהצלחה!"); // Show success message
@@ -101,7 +121,7 @@ window.loadAttendanceData = async function(userId) {
     const docId = `${startDateFormatted.replace(/\//g, '-')}_${userId}`;
 
     try {
-        const docRef = db.collection("attendanceRecords").doc(docId);
+        const docRef = window.db.collection("attendanceRecords").doc(docId); // Use window.db
         const docSnapshot = await docRef.get();
 
         if (docSnapshot.exists) {

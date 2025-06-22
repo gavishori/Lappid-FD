@@ -3,6 +3,49 @@
 // are now expected to be available globally on the 'window' object,
 // defined in firebase.js after Firebase SDKs are loaded via CDN.
 
+const INACTIVITY_TIMEOUT = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+let inactivityTimer;
+
+/**
+ * Checks for inactivity and logs out if necessary.
+ */
+function checkInactivity() {
+    const lastActivity = localStorage.getItem('lastActivity');
+    if (lastActivity) {
+        const elapsedTime = Date.now() - parseInt(lastActivity, 10);
+        if (elapsedTime > INACTIVITY_TIMEOUT) {
+            console.log("Inactivity detected. Logging out user.");
+            logoutUser();
+        }
+    }
+    resetInactivityTimer(); // Always reset to keep checking
+}
+
+/**
+ * Resets the inactivity timer and updates last activity timestamp.
+ */
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    localStorage.setItem('lastActivity', Date.now());
+    inactivityTimer = setTimeout(checkInactivity, INACTIVITY_TIMEOUT);
+}
+
+/**
+ * Logs out the user and redirects to the login page.
+ */
+async function logoutUser() {
+    try {
+        if (window.auth) {
+            await window.auth.signOut();
+        }
+        localStorage.removeItem('lastActivity'); // Clear activity stamp on logout
+        window.location.href = 'login.html'; // Redirect to login page
+    } catch (error) {
+        console.error("Error logging out:", error);
+        window.alertMessage("שגיאה בהתנתקות: " + error.message);
+    }
+}
+
 /**
  * Formats a Date object into a DD/MM/YYYY string.
  * @param {Date} date The date object to format.
@@ -72,8 +115,8 @@ function displayWelcomeMessage() {
         return;
     }
 
-    // Use onAuthStateChanged from the globally exposed 'auth' object
-    if (typeof window.auth !== 'undefined') {
+    // Use onAuthStateChanged to ensure we have the user state
+    if (typeof window.auth !== 'undefined') { // Use window.auth
         window.auth.onAuthStateChanged(user => {
             let username = "אורח"; // Default for unauthenticated users
             if (user) {
@@ -123,16 +166,82 @@ window.switchView = function(viewId) {
 
     if (viewId === 'summary-view') {
         // Populate summary data when switching to summary view
-        populateSummaryData();
+        // Pass 'null' for selectedTeam to indicate no specific team is clicked initially,
+        // so it will rely on the current user's teams.
+        populateSummaryData(null);
     }
 };
+
+/**
+ * Populates the team filter list with clickable team names.
+ */
+window.displayTeamFilterList = function() {
+    const teamFilterListContainer = document.getElementById('teamFilterList');
+    if (!teamFilterListContainer) return;
+
+    // Ensure window.db is available before proceeding
+    if (typeof window.db === 'undefined' || !window.db) {
+        console.warn("Firestore (window.db) is not initialized when calling displayTeamFilterList.");
+        return;
+    }
+
+    // Clear existing buttons
+    teamFilterListContainer.innerHTML = '';
+
+    // Hardcode the known roles as options for the filter
+    // Removed "כל הקבוצות" from here
+    const allTeams = ["כיבוי אש חילוץ והצלה", "הנרי לרפואה", "תורני חפ\"ק"];
+
+    allTeams.forEach(team => {
+        const teamButton = document.createElement('button');
+        teamButton.className = `px-4 py-2 rounded-full font-semibold transition-colors duration-200
+                                bg-gray-200 text-gray-700 hover:bg-blue-500 hover:text-white
+                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`;
+        teamButton.textContent = team;
+        teamButton.value = team; // Store the team name as a value
+
+        teamButton.addEventListener('click', () => {
+            // Remove active style from all buttons
+            document.querySelectorAll('#teamFilterList button').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            // Add active style to the clicked button
+            teamButton.classList.remove('bg-gray-200', 'text-gray-700');
+            teamButton.classList.add('bg-blue-600', 'text-white');
+
+            // Pass the clicked team value to populateSummaryData
+            // If "כל הקבוצות" was still here, its value would be null. Now we pass the team directly.
+            populateSummaryData(team);
+        });
+        teamFilterListContainer.appendChild(teamButton);
+    });
+
+    // Removed the automatic selection of "כל הקבוצות" button
+};
+
 
 /**
  * Populates the summary tables by fetching and aggregating data from Firestore.
  * This function will now dynamically calculate counts and list names based on
  * the attendance records stored in Firebase.
+ * @param {string | null} filterByTeam The team to filter by, or null for all teams (within user's accessible teams).
  */
-async function populateSummaryData() {
+async function populateSummaryData(filterByTeam = null) {
+    // Ensure window.db is available before proceeding
+    if (typeof window.db === 'undefined' || !window.db) {
+        console.error("Firestore (window.db) is not initialized.");
+        window.alertMessage("שגיאה: Firestore אינו מאותחל. אנא רענן את הדף.");
+        return;
+    }
+     // Ensure window.auth is available before proceeding
+     if (typeof window.auth === 'undefined' || !window.auth) {
+        console.error("Firebase Auth (window.auth) is not initialized.");
+        window.alertMessage("שגיאה: Firebase Auth אינו מאותחל. אנא רענן את הדף.");
+        return;
+    }
+
+
     displayWeekDates(); // Ensure dates are updated on summary view
 
     const quantityTableBody = document.querySelector('#quantitySummaryTable tbody');
@@ -163,8 +272,8 @@ async function populateSummaryData() {
     ];
 
     // Initialize aggregation objects for both quantity and names summaries
-    const shiftCounts = {}; // Stores counts for each status per shift (e.g., { "ראשון בוקר": { "נוכח": 3, ... } })
-    const shiftNames = {}; // Stores arrays of names for each status per shift (e.g., { "ראשון בוקר": { "נוכח": ["אורי", "אדיר"], ... } })
+    const shiftCounts = {};
+    const shiftNames = {};
 
     // Populate initial structure for all shifts with zero counts and empty name arrays
     shiftsData.forEach(shift => {
@@ -172,28 +281,74 @@ async function populateSummaryData() {
         shiftNames[shift.name] = { "נוכח": [], "נעדר": [], "חלקי": [], "לא ידוע": [] };
     });
 
+    const currentUser = window.auth.currentUser;
+    let currentUserAssignedTeams = []; // This will store the teams the current user is assigned to
+
+    if (currentUser) {
+        try {
+            // Fetch the current user's roles/teams from the 'userRoles' collection
+            const userRolesDoc = await window.db.collection("userRoles").doc(currentUser.uid).get();
+            if (userRolesDoc.exists && userRolesDoc.data().roles) {
+                currentUserAssignedTeams = userRolesDoc.data().roles;
+            }
+        } catch (e) {
+            console.error("Error fetching current user's assigned teams for summary:", e);
+        }
+    }
+
     try {
         // Fetch all attendance records from Firestore
-        // Assuming 'db' is globally available from firebase.js
-        const querySnapshot = await db.collection("attendanceRecords").get();
+        const querySnapshot = await window.db.collection("attendanceRecords").get();
+        const recordsToProcess = [];
 
-        // Iterate over each document (attendance record) fetched from Firestore
         querySnapshot.forEach(doc => {
-            const record = doc.data(); // Get the data from the document
-            const attendanceData = record.data; // This 'data' object holds shift status (e.g., {"שבת בוקר_1": "נוכח"})
-            const username = record.username || "משתמש אנונימי"; // Get username, default if not present
+            const record = doc.data();
+            const recordUserRoles = record.userRoles || []; // Get roles (teams) from attendance record
 
-            // Process attendance data for each shift in the current record
+            let passesCurrentUserTeamsFilter = false;
+            // A record passes this filter if the record's user has at least one common team with the current user
+            if (currentUserAssignedTeams.length > 0) {
+                if (recordUserRoles.some(role => currentUserAssignedTeams.includes(role))) {
+                    passesCurrentUserTeamsFilter = true;
+                }
+            } else {
+                // If the current user has no assigned teams, they shouldn't see any team-specific data.
+                // Or you could make them see all if they are an admin
+                passesCurrentUserTeamsFilter = false;
+            }
+
+            // Apply the overall filter based on the clicked team in the summary view
+            let passesClickedTeamFilter = true;
+            // Now, filterByTeam will be the actual team name (or null).
+            if (filterByTeam !== null) {
+                // If a specific team button was clicked, check if the record user belongs to that team
+                passesClickedTeamFilter = recordUserRoles.includes(filterByTeam);
+            }
+
+            // Only add the record if it passes both filters
+            if (passesCurrentUserTeamsFilter && passesClickedTeamFilter) {
+                recordsToProcess.push(record);
+            }
+        });
+
+        // Process filtered attendance data
+        recordsToProcess.forEach(record => {
+            const attendanceData = record.data;
+            const username = record.username || "משתמש אנונימי";
+
             for (const shiftName in attendanceData) {
-                const status = attendanceData[shiftName]; // Get the status for the current shift
+                const status = attendanceData[shiftName];
 
-                // Ensure the shift and status exist in our aggregation objects
                 if (shiftCounts[shiftName] && shiftCounts[shiftName][status] !== undefined) {
-                    shiftCounts[shiftName][status]++; // Increment count for the status
-                    shiftNames[shiftName][status].push(username); // Add username to the list for this status
+                    shiftCounts[shiftName][status]++;
+                    // Only add the username to the list if it's not already there for this shift and status
+                    if (!shiftNames[shiftName][status].includes(username)) {
+                        shiftNames[shiftName][status].push(username);
+                    }
                 }
             }
         });
+
 
         // Populate "לפי כמות" (By Quantity) table using aggregated data
         shiftsData.forEach(shift => {
@@ -308,11 +463,20 @@ window.alertMessage = function(message) {
 
 // Event listener for when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
+    // Check for inactivity immediately on page load
+    checkInactivity();
+
     generateAttendanceTableRows(); // Generate rows dynamically
     displayWeekDates(); // Display current week's dates
     displayWelcomeMessage(); // Display welcome message
     window.initFirebase(); // Initialize Firebase and trigger data load/welcome message
-    window.switchView('attendance-view'); // Show attendance view by default
+    // Moved to initFirebase's onAuthStateChanged: window.displayTeamFilterList();
+    // Moved to initFirebase's onAuthStateChanged: window.switchView('attendance-view');
+
+    // Add global event listeners to reset the inactivity timer
+    document.addEventListener('mousemove', resetInactivityTimer);
+    document.addEventListener('keydown', resetInactivityTimer);
+    document.addEventListener('click', resetInactivityTimer);
 });
 
 // window.saveAttendanceData and window.loadAttendanceData are now defined in firebase.js

@@ -12,70 +12,127 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase app if not already initialized
-// This ensures that the login page can function independently
 const app = firebase.initializeApp(firebaseConfig);
-const auth = app.auth(); // Get the Auth service using the compat API
+const auth = app.auth();
+const db = app.firestore();
 
-// Get references to HTML elements
-const nameInput = document.getElementById('name');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
+// Get references to HTML elements for Login Form
+const loginEmailInput = document.getElementById('loginEmail');
+const loginPasswordInput = document.getElementById('loginPassword');
 const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
+const openSignupPopupBtn = document.getElementById('openSignupPopupBtn');
 const authMessageBox = document.getElementById('authMessageBox');
 const authMessageText = document.getElementById('authMessageText');
 
+// Get references to HTML elements for Signup Modal
+const signupModal = document.getElementById('signupModal');
+const closeSignupModalBtn = document.getElementById('closeSignupModalBtn');
+const signupNameInput = document.getElementById('signupName');
+const signupEmailInput = document.getElementById('signupEmail');
+const signupPasswordInput = document.getElementById('signupPassword');
+
+// Signup Team Checkboxes
+const signupRoleFirefighting = document.getElementById('signupRoleFirefighting');
+const signupRoleMedical = document.getElementById('signupRoleMedical');
+const signupRoleHafak = document.getElementById('signupRoleHafak');
+
+const registerBtn = document.getElementById('registerBtn');
+const signupMessageBox = document.getElementById('signupMessageBox');
+const signupMessageText = document.getElementById('signupMessageText');
+
 /**
- * Displays a message in the message box.
+ * Displays a message in the specified message box.
+ * @param {HTMLElement} messageBoxElement The div element to display the message in.
+ * @param {HTMLElement} messageTextElement The span element inside the message box for text.
  * @param {string} message The message to display.
  * @param {boolean} isError True if it's an error message (red), false for success (green).
  */
-function displayAuthMessage(message, isError) {
-    authMessageText.innerText = message;
-    authMessageBox.classList.remove('hidden'); // Show the message box
+function displayMessage(messageBoxElement, messageTextElement, message, isError) {
+    messageTextElement.innerText = message;
+    messageBoxElement.classList.remove('hidden');
 
     if (isError) {
-        authMessageBox.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-        authMessageBox.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
+        messageBoxElement.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+        messageBoxElement.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
     } else {
-        authMessageBox.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-        authMessageBox.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
+        messageBoxElement.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+        messageBoxElement.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
     }
 
     setTimeout(() => {
-        authMessageBox.classList.add('hidden'); // Hide after 3 seconds
+        messageBoxElement.classList.add('hidden');
     }, 3000);
 }
 
 /**
- * Handles user sign-up with email, password, and name.
+ * Opens the signup modal.
+ */
+function openSignupModal() {
+    signupModal.classList.remove('hidden');
+    signupNameInput.value = ''; // Clear fields
+    signupEmailInput.value = '';
+    signupPasswordInput.value = '';
+    // Uncheck all checkboxes
+    signupRoleFirefighting.checked = false;
+    signupRoleMedical.checked = false;
+    signupRoleHafak.checked = false;
+    signupMessageBox.classList.add('hidden'); // Hide any previous messages
+}
+
+/**
+ * Closes the signup modal.
+ */
+function closeSignupModal() {
+    signupModal.classList.add('hidden');
+}
+
+/**
+ * Handles user sign-up with email, password, name, and selected team.
  */
 async function handleSignUp() {
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
+    const name = signupNameInput.value.trim();
+    const email = signupEmailInput.value.trim();
+    const password = signupPasswordInput.value.trim();
 
-    if (!name || !email || !password) {
-        displayAuthMessage("אנא מלא את כל השדות (שם, אימייל וסיסמה).", true);
+    const selectedTeams = [];
+    if (signupRoleFirefighting.checked) {
+        selectedTeams.push(signupRoleFirefighting.value);
+    }
+    if (signupRoleMedical.checked) {
+        selectedTeams.push(signupRoleMedical.value);
+    }
+    if (signupRoleHafak.checked) {
+        selectedTeams.push(signupRoleHafak.value);
+    }
+
+
+    if (!name || !email || !password || selectedTeams.length === 0) {
+        displayMessage(signupMessageBox, signupMessageText, "אנא מלא את כל השדות ובחר צוות אחד לפחות.", true);
         return;
     }
 
     try {
-        // Create user with email and password
         const userCredential = await auth.createUserWithEmailAndPassword(email, password);
         const user = userCredential.user;
 
-        // Update user profile with the provided name
         await user.updateProfile({
             displayName: name
         });
 
-        console.log("User signed up and profile updated:", user);
-        displayAuthMessage("ההרשמה בוצעה בהצלחה! מועבר לדף הראשי...", false);
+        // Save user's selected teams to Firestore
+        await db.collection("userRoles").doc(user.uid).set({
+            roles: selectedTeams, // Store as an array with multiple selected teams
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
 
-        // Redirect to the main application page after a short delay
+        console.log("User signed up and profile updated:", user);
+        console.log("User teams saved:", selectedTeams);
+        displayMessage(signupMessageBox, signupMessageText, "ההרשמה בוצעה בהצלחה! מועבר לדף הראשי...", false);
+
+        localStorage.setItem('lastActivity', Date.now()); // Update last activity on successful signup
+
         setTimeout(() => {
-            window.location.href = 'index.html'; // Adjust this to your main app page
+            window.location.href = 'index.html';
         }, 1500);
 
     } catch (error) {
@@ -97,7 +154,7 @@ async function handleSignUp() {
             default:
                 errorMessage += error.message;
         }
-        displayAuthMessage(errorMessage, true);
+        displayMessage(signupMessageBox, signupMessageText, errorMessage, true);
     }
 }
 
@@ -105,22 +162,23 @@ async function handleSignUp() {
  * Handles user sign-in with email and password.
  */
 async function handleSignIn() {
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
+    const email = loginEmailInput.value.trim();
+    const password = loginPasswordInput.value.trim();
 
     if (!email || !password) {
-        displayAuthMessage("אנא הכנס אימייל וסיסמה.", true);
+        displayMessage(authMessageBox, authMessageText, "אנא הכנס אימייל וסיסמה.", true);
         return;
     }
 
     try {
         await auth.signInWithEmailAndPassword(email, password);
         console.log("User signed in successfully.");
-        displayAuthMessage("התחברת בהצלחה! מועבר לדף הראשי...", false);
+        displayMessage(authMessageBox, authMessageText, "התחברת בהצלחה! מועבר לדף הראשי...", false);
 
-        // Redirect to the main application page after a short delay
+        localStorage.setItem('lastActivity', Date.now()); // Update last activity on successful signin
+
         setTimeout(() => {
-            window.location.href = 'index.html'; // Adjust this to your main app page
+            window.location.href = 'index.html';
         }, 1500);
 
     } catch (error) {
@@ -142,13 +200,15 @@ async function handleSignIn() {
             default:
                 errorMessage += error.message;
         }
-        displayAuthMessage(errorMessage, true);
+        displayMessage(authMessageBox, authMessageText, errorMessage, true);
     }
 }
 
-// Add event listeners to the buttons
+// Event Listeners
 loginBtn.addEventListener('click', handleSignIn);
-signupBtn.addEventListener('click', handleSignUp);
+openSignupPopupBtn.addEventListener('click', openSignupModal);
+closeSignupModalBtn.addEventListener('click', closeSignupModal);
+registerBtn.addEventListener('click', handleSignUp);
 
 // Optional: Automatically redirect if user is already signed in
 auth.onAuthStateChanged(user => {
@@ -158,9 +218,3 @@ auth.onAuthStateChanged(user => {
         // window.location.href = 'index.html'; // Uncomment if immediate redirect is desired
     }
 });
-
-// Hide name input field for login view initially, show on signup button click
-// This requires a minor modification to how name field is handled, or a toggle view.
-// For simplicity, it's always visible here, which works for both.
-// If you want to dynamically hide/show the name field based on login/signup,
-// you would add toggle logic here.
