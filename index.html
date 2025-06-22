@@ -105,8 +105,14 @@
         <p id="messageText"></p>
     </div>
 
-    <!-- Firebase and main application scripts -->
-    <script type="module" src="firebase.js"></script>
+    <!-- Firebase SDKs - make sure these are before your custom scripts -->
+    <!-- Using the compatibility version for global access -->
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-auth-compat.js"></script> <!-- Added auth for potential future use in main app -->
+
+    <!-- Your custom scripts -->
+    <script src="firebase.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 </html>
