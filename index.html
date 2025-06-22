@@ -8,24 +8,70 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Custom styles for responsive tables */
+        .table-container {
+            overflow-x: auto; /* Enables horizontal scrolling on small screens */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+        }
+        /* Make table cells wrap content on smaller screens, and reduce padding */
+        .table-auto-cols th,
+        .table-auto-cols td {
+            white-space: nowrap; /* Prevent wrapping in headers and cells by default */
+        }
+
+        @media (max-width: 640px) { /* Small screens (sm breakpoint) */
+            .table-auto-cols th,
+            .table-auto-cols td {
+                padding-left: 0.5rem; /* px-2 */
+                padding-right: 0.5rem; /* px-2 */
+            }
+            .table-auto-cols td.text-sm-nowrap {
+                 white-space: nowrap; /* Keep specific cells (like names) from wrapping on very small screens */
+            }
+            .table-auto-cols th {
+                font-size: 0.75rem; /* text-xs */
+            }
+        }
+
+        /* Specific styling for radio button labels to ensure they are clickable on mobile */
+        .radio-label {
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Center items vertically */
+            justify-content: flex-end; /* Align content to the right for RTL */
+            cursor: pointer;
+            padding: 0.5rem; /* Smaller padding for mobile touch targets */
+            border-radius: 9999px; /* rounded-full */
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .radio-label:hover {
+            background-color: #e0f2fe; /* Light blue on hover */
+        }
+
+        .radio-label input[type="radio"] {
+            margin-right: 0.5rem; /* Space between radio and text */
+            margin-left: 0; /* Override default left margin */
+        }
+    </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-    <div class="container mx-auto p-6 bg-white rounded-xl shadow-lg w-full max-w-4xl">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
+    <div class="container mx-auto p-4 sm:p-6 bg-white rounded-xl shadow-lg w-full max-w-4xl">
 
         <!-- Attendance Input View -->
         <div id="attendance-view">
             <!-- Paragraph to display the dynamic date range -->
-            <p id="weekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
+            <p id="weekDates" class="text-center text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base"></p>
 
-            <div> <!-- Removed overflow-x-auto -->
-                <table class="w-full bg-white border border-gray-200 rounded-lg"> <!-- Changed min-w-full to w-full -->
+            <div class="table-container"> <!-- Added a wrapper for overflow-x-auto -->
+                <table class="w-full bg-white border border-gray-200 rounded-lg table-auto-cols">
                     <thead>
-                        <tr class="bg-blue-600 text-white text-center">
-                            <th class="py-3 px-2 sm:px-4 text-right rounded-tl-lg">משמרת</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">לא ידוע</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">חלקי</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">נעדר</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4 rounded-tr-lg">נוכח</th> <!-- Adjusted px -->
+                        <tr class="bg-blue-600 text-white text-center text-xs sm:text-base">
+                            <th class="py-2 px-1 sm:py-3 sm:px-4 text-right rounded-tl-lg">משמרת</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">לא ידוע</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">חלקי</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">נעדר</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4 rounded-tr-lg">נוכח</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -34,11 +80,11 @@
                 </table>
             </div>
 
-            <div class="mt-8 flex justify-center gap-4">
-                <button onclick="window.saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+            <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                <button onclick="window.saveAttendanceData()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
                     שמור נתונים
                 </button>
-                <button onclick="window.switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <button onclick="window.switchView('summary-view')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
                     עבור לסיכום
                 </button>
             </div>
@@ -46,29 +92,28 @@
 
         <!-- Summary View -->
         <div id="summary-view" class="hidden">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-2">סיכום נוכחים</h1>
-            <p id="summaryWeekDates" class="text-center text-gray-600 mb-6">טוען תאריכים...</p>
+            <h1 class="text-xl sm:text-3xl font-bold text-center text-gray-800 mb-2">סיכום נוכחים</h1>
+            <p id="summaryWeekDates" class="text-center text-gray-600 mb-4 sm:mb-6 text-sm sm:text-base"></p>
 
             <!-- Team Filter List -->
-            <div class="mb-4 flex justify-center items-center"> <!-- text-center moved to flex justify-center -->
-                <label class="block text-gray-700 text-sm font-bold mb-2 ml-2">בחר צוות לסנן:</label>
-                <div id="teamFilterList" class="flex flex-wrap gap-2 justify-center">
+            <div class="mb-4 flex flex-col sm:flex-row justify-center items-center">
+                <label class="block text-gray-700 text-sm font-bold mb-2 sm:mb-0 ml-0 sm:ml-2">בחר צוות לסנן:</label>
+                <div id="teamFilterList" class="flex flex-wrap gap-2 justify-center mt-2 sm:mt-0">
                     <!-- Team buttons will be dynamically populated here -->
                 </div>
             </div>
 
-
             <!-- Table: לפי כמות -->
-            <h2 class="text-2xl font-bold text-center text-gray-800 mt-8 mb-4">לפי כמות</h2>
-            <div class="overflow-x-auto mb-8">
-                <table id="quantitySummaryTable" class="w-full bg-white border border-gray-200 rounded-lg"> <!-- Changed min-w-full to w-full -->
+            <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mt-6 sm:mt-8 mb-3 sm:mb-4">לפי כמות</h2>
+            <div class="table-container mb-6 sm:mb-8">
+                <table id="quantitySummaryTable" class="w-full bg-white border border-gray-200 rounded-lg table-auto-cols">
                     <thead>
-                        <tr class="bg-blue-600 text-white text-center">
-                            <th class="py-3 px-2 sm:px-4 text-right rounded-tl-lg">משמרת</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">לא ידוע</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">חלקי</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">נעדר</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4 rounded-tr-lg">נוכח</th> <!-- Adjusted px -->
+                        <tr class="bg-blue-600 text-white text-center text-xs sm:text-base">
+                            <th class="py-2 px-1 sm:py-3 sm:px-4 text-right rounded-tl-lg">משמרת</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">לא ידוע</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">חלקי</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">נעדר</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4 rounded-tr-lg">נוכח</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,16 +123,16 @@
             </div>
 
             <!-- Table: לפי שמות -->
-            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">לפי שמות</h2>
-            <div class="overflow-x-auto">
-                <table id="namesSummaryTable" class="w-full bg-white border border-gray-200 rounded-lg"> <!-- Changed min-w-full to w-full -->
+            <h2 class="text-xl sm:text-2xl font-bold text-center text-gray-800 mb-3 sm:mb-4">לפי שמות</h2>
+            <div class="table-container">
+                <table id="namesSummaryTable" class="w-full bg-white border border-gray-200 rounded-lg table-auto-cols">
                     <thead>
-                        <tr class="bg-blue-600 text-white text-center">
-                            <th class="py-3 px-2 sm:px-4 text-right rounded-tl-lg">משמרת</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">לא ידוע</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">חלקי</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4">נעדר</th> <!-- Adjusted px -->
-                            <th class="py-3 px-2 sm:px-4 rounded-tr-lg">נוכח</th> <!-- Adjusted px -->
+                        <tr class="bg-blue-600 text-white text-center text-xs sm:text-base">
+                            <th class="py-2 px-1 sm:py-3 sm:px-4 text-right rounded-tl-lg">משמרת</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">לא ידוע</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">חלקי</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4">נעדר</th>
+                            <th class="py-2 px-1 sm:py-3 sm:px-4 rounded-tr-lg">נוכח</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -96,11 +141,11 @@
                 </table>
             </div>
 
-            <div class="mt-8 flex justify-center gap-4">
-                <button onclick="window.switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+            <div class="mt-6 flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                <button onclick="window.switchView('attendance-view')" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
                     חזור לדף הזנה
                 </button>
-                <button onclick="window.alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                <button onclick="window.alertMessage('פונקציית הצגת אנשים ללא נוכחות תמומש כאן בהמשך.')" class="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 sm:px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-sm sm:text-base w-full sm:w-auto">
                     הצג אנשים ללא נוכחות
                 </button>
             </div>

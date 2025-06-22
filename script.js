@@ -173,9 +173,38 @@ window.switchView = function(viewId) {
 
     if (viewId === 'summary-view') {
         // Populate summary data when switching to summary view
-        // Pass 'null' for selectedTeam to indicate no specific team is clicked initially,
-        // so it will rely on the current user's teams.
-        populateSummaryData(null);
+        // Initially, filter by the current user's first assigned team if available, otherwise null for no filter
+        // We will now default to showing data for the user's first team, if they have any.
+        const currentUser = window.auth.currentUser;
+        let defaultTeamFilter = null;
+        if (currentUser) {
+            window.db.collection("userRoles").doc(currentUser.uid).get().then(userRolesDoc => {
+                if (userRolesDoc.exists && userRolesDoc.data().roles && userRolesDoc.data().roles.length > 0) {
+                    defaultTeamFilter = userRolesDoc.data().roles[0]; // Set default to the first assigned team
+                    populateSummaryData(defaultTeamFilter); // Call with the default team
+                    // Also set the active style for the corresponding button
+                    const teamFilterListContainer = document.getElementById('teamFilterList');
+                    if (teamFilterListContainer) {
+                        const defaultTeamButton = teamFilterListContainer.querySelector(`button[value="${defaultTeamFilter}"]`);
+                        if (defaultTeamButton) {
+                            document.querySelectorAll('#teamFilterList button').forEach(btn => {
+                                btn.classList.remove('bg-blue-600', 'text-white');
+                                btn.classList.add('bg-gray-200', 'text-gray-700');
+                            });
+                            defaultTeamButton.classList.remove('bg-gray-200', 'text-gray-700');
+                            defaultTeamButton.classList.add('bg-blue-600', 'text-white');
+                        }
+                    }
+                } else {
+                    populateSummaryData(null); // No teams assigned, show no specific team filter
+                }
+            }).catch(e => {
+                console.error("Error fetching user roles for default summary view:", e);
+                populateSummaryData(null); // Fallback to no filter on error
+            });
+        } else {
+             populateSummaryData(null); // No user, no filter
+        }
     }
 };
 
@@ -195,36 +224,90 @@ window.displayTeamFilterList = function() {
     // Clear existing buttons
     teamFilterListContainer.innerHTML = '';
 
-    // Hardcode the known roles as options for the filter
-    // Removed "כל הקבוצות" from here
+    // Hardcode the known roles as options for the filter - Removed "כל הקבוצות"
     const allTeams = ["כיבוי אש חילוץ והצלה", "הנרי לרפואה", "תורני חפק"];
 
-    allTeams.forEach(team => {
-        const teamButton = document.createElement('button');
-        teamButton.className = `px-4 py-2 rounded-full font-semibold transition-colors duration-200
-                                bg-gray-200 text-gray-700 hover:bg-blue-500 hover:text-white
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`;
-        teamButton.textContent = team;
-        teamButton.value = team; // Store the team name as a value
+    // Fetch the current user's roles to determine which team button to activate initially
+    const currentUser = window.auth.currentUser;
+    let currentUserAssignedTeams = [];
+    if (currentUser) {
+        window.db.collection("userRoles").doc(currentUser.uid).get().then(userRolesDoc => {
+            if (userRolesDoc.exists && userRolesDoc.data().roles) {
+                currentUserAssignedTeams = userRolesDoc.data().roles;
+            }
+            // Now, populate buttons and set active state
+            allTeams.forEach(team => {
+                const teamButton = document.createElement('button');
+                teamButton.className = `px-4 py-2 rounded-full font-semibold transition-colors duration-200
+                                        bg-gray-200 text-gray-700 hover:bg-blue-500 hover:text-white
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`;
+                teamButton.textContent = team;
+                teamButton.value = team; // Store the team name as a value
 
-        teamButton.addEventListener('click', () => {
-            // Remove active style from all buttons
-            document.querySelectorAll('#teamFilterList button').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-200', 'text-gray-700');
+                // Set active style for the first assigned team of the current user
+                if (currentUserAssignedTeams.length > 0 && team === currentUserAssignedTeams[0]) {
+                    teamButton.classList.remove('bg-gray-200', 'text-gray-700');
+                    teamButton.classList.add('bg-blue-600', 'text-white');
+                }
+
+                teamButton.addEventListener('click', () => {
+                    // Remove active style from all buttons
+                    document.querySelectorAll('#teamFilterList button').forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-700');
+                    });
+                    // Add active style to the clicked button
+                    teamButton.classList.remove('bg-gray-200', 'text-gray-700');
+                    teamButton.classList.add('bg-blue-600', 'text-white');
+
+                    // Pass the clicked team value to populateSummaryData
+                    populateSummaryData(team);
+                });
+                teamFilterListContainer.appendChild(teamButton);
             });
-            // Add active style to the clicked button
-            teamButton.classList.remove('bg-gray-200', 'text-gray-700');
-            teamButton.classList.add('bg-blue-600', 'text-white');
-
-            // Pass the clicked team value to populateSummaryData
-            // If "כל הקבוצות" was still here, its value would be null. Now we pass the team directly.
-            populateSummaryData(team);
+        }).catch(e => {
+            console.error("Error fetching user roles for displayTeamFilterList:", e);
+            // Even if roles fail to load, still display the buttons without initial active state
+            allTeams.forEach(team => {
+                const teamButton = document.createElement('button');
+                teamButton.className = `px-4 py-2 rounded-full font-semibold transition-colors duration-200
+                                        bg-gray-200 text-gray-700 hover:bg-blue-500 hover:text-white
+                                        focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`;
+                teamButton.textContent = team;
+                teamButton.value = team; // Store the team name as a value
+                teamButton.addEventListener('click', () => {
+                    document.querySelectorAll('#teamFilterList button').forEach(btn => {
+                        btn.classList.remove('bg-blue-600', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-700');
+                    });
+                    teamButton.classList.remove('bg-gray-200', 'text-gray-700');
+                    teamButton.classList.add('bg-blue-600', 'text-white');
+                    populateSummaryData(team);
+                });
+                teamFilterListContainer.appendChild(teamButton);
+            });
         });
-        teamFilterListContainer.appendChild(teamButton);
-    });
-
-    // Removed the automatic selection of "כל הקבוצות" button
+    } else {
+        // If no user is logged in, still display the buttons, but none will be active by default.
+        allTeams.forEach(team => {
+            const teamButton = document.createElement('button');
+            teamButton.className = `px-4 py-2 rounded-full font-semibold transition-colors duration-200
+                                    bg-gray-200 text-gray-700 hover:bg-blue-500 hover:text-white
+                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`;
+            teamButton.textContent = team;
+            teamButton.value = team; // Store the team name as a value
+            teamButton.addEventListener('click', () => {
+                document.querySelectorAll('#teamFilterList button').forEach(btn => {
+                    btn.classList.remove('bg-blue-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-700');
+                });
+                teamButton.classList.remove('bg-gray-200', 'text-gray-700');
+                teamButton.classList.add('bg-blue-600', 'text-white');
+                populateSummaryData(team);
+            });
+            teamFilterListContainer.appendChild(teamButton);
+        });
+    }
 };
 
 
@@ -301,6 +384,10 @@ async function populateSummaryData(filterByTeam = null) {
         } catch (e) {
             console.error("Error fetching current user's assigned teams for summary:", e);
         }
+    } else {
+        console.log("No user logged in. Cannot populate team-filtered summary data.");
+        window.alertMessage("אין משתמש מחובר. לא ניתן לטעון נתוני סיכום מותאמים לצוות.");
+        return;
     }
 
     try {
@@ -312,27 +399,27 @@ async function populateSummaryData(filterByTeam = null) {
             const record = doc.data();
             const recordUserRoles = record.userRoles || []; // Get roles (teams) from attendance record
 
+            // Filter 1: Check if the record user has any common teams with the current logged-in user
             let passesCurrentUserTeamsFilter = false;
-            // A record passes this filter if the record's user has at least one common team with the current user
             if (currentUserAssignedTeams.length > 0) {
+                // If the current user has assigned teams, check if the record user shares any of them
                 if (recordUserRoles.some(role => currentUserAssignedTeams.includes(role))) {
                     passesCurrentUserTeamsFilter = true;
                 }
             } else {
-                // If the current user has no assigned teams, they shouldn't see any team-specific data.
-                // Or you could make them see all if they are an admin
+                // If the current user has NO assigned teams, they should not see any data.
+                // This prevents users without roles from seeing all data.
                 passesCurrentUserTeamsFilter = false;
             }
 
-            // Apply the overall filter based on the clicked team in the summary view
+            // Filter 2: Apply the filter based on the specific team button clicked (if any)
             let passesClickedTeamFilter = true;
-            // Now, filterByTeam will be the actual team name (or null).
             if (filterByTeam !== null) {
                 // If a specific team button was clicked, check if the record user belongs to that team
                 passesClickedTeamFilter = recordUserRoles.includes(filterByTeam);
             }
 
-            // Only add the record if it passes both filters
+            // Only add the record if it passes BOTH the current user's team filter AND the clicked team filter
             if (passesCurrentUserTeamsFilter && passesClickedTeamFilter) {
                 recordsToProcess.push(record);
             }
@@ -425,25 +512,25 @@ function generateAttendanceTableRows() {
             row.innerHTML = `
                 <td class="py-3 px-4 text-right">${shift.label}</td>
                 <td class="py-3 px-4">
-                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer">
+                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer radio-label">
                         <span class="ml-2 text-gray-700">לא ידוע</span>
                         <input type="radio" name="${shift.name}" value="לא ידוע" class="form-radio h-4 w-4 text-blue-600 rounded-full">
                     </label>
                 </td>
                 <td class="py-3 px-4">
-                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer">
+                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer radio-label">
                         <span class="ml-2 text-gray-700">חלקי</span>
                         <input type="radio" name="${shift.name}" value="חלקי" class="form-radio h-4 w-4 text-blue-600 rounded-full">
                     </label>
                 </td>
                 <td class="py-3 px-4">
-                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer">
+                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer radio-label">
                         <span class="ml-2 text-gray-700">נעדר</span>
                         <input type="radio" name="${shift.name}" value="נעדר" class="form-radio h-4 w-4 text-blue-600 rounded-full">
                     </label>
                 </td>
                 <td class="py-3 px-4">
-                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer">
+                    <label class="inline-flex items-center p-2 rounded-full cursor-pointer radio-label">
                         <span class="ml-2 text-gray-700">נוכח</span>
                         <input type="radio" name="${shift.name}" value="נוכח" class="form-radio h-4 w-4 text-blue-600 rounded-full" checked>
                     </label>

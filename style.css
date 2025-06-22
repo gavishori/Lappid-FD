@@ -39,3 +39,30 @@ input[type="radio"]:checked::after {
     background-color: white; /* White dot */
     display: block;
 }
+
+/* Ensure images and other media are responsive */
+img, video, canvas {
+    max-width: 100%;
+    height: auto;
+    display: block; /* Prevents extra space below images */
+}
+
+/* Adjust table cell padding and font sizes for small screens */
+@media (max-width: 640px) { /* Tailwind's 'sm' breakpoint */
+    .table-auto-cols th,
+    .table-auto-cols td {
+        padding-left: 0.25rem; /* px-1 */
+        padding-right: 0.25rem; /* px-1 */
+        font-size: 0.75rem; /* text-xs */
+    }
+
+    /* Override for specific columns that should break text */
+    .names-table .py-3.px-4.text-sm.whitespace-normal {
+        white-space: normal; /* Allow text to wrap for names on small screens */
+    }
+
+    /* Adjust padding for labels containing radio buttons */
+    .radio-label {
+        padding: 0.25rem; /* Smaller padding for radio button labels */
+    }
+}
