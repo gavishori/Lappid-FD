@@ -49,22 +49,50 @@ img, video, canvas {
 
 /* Adjust table cell padding and font sizes for small screens */
 @media (max-width: 640px) { /* Tailwind's 'sm' breakpoint */
-    .table-auto-cols th,
-    .table-auto-cols td {
-        padding-left: 0.25rem; /* px-1 */
-        padding-right: 0.25rem; /* px-1 */
-        font-size: 1rem; /* Increased to 1rem (base font size) for better readability on mobile */
-        white-space: normal; /* Allow text to wrap within cells to prevent horizontal scrolling */
+    /* Ensure the table container does not allow horizontal scrolling on mobile */
+    .table-container {
+        overflow-x: hidden;
     }
 
-    /* Override for specific columns that should break text */
-    /* This rule is now less critical as white-space: normal is applied globally to table cells */
+    /* Target tables specifically within the attendance-view for fixed layout */
+    #attendance-view table {
+        table-layout: fixed; /* Force fixed column widths to prevent overflow */
+        width: 100%; /* Ensure the table takes up the full available width */
+    }
+
+    #attendance-view .table-auto-cols th,
+    #attendance-view .table-auto-cols td {
+        padding-left: 0.1rem; /* Reduced padding for compact layout on mobile */
+        padding-right: 0.1rem; /* Reduced padding for compact layout on mobile */
+        font-size: 1rem; /* Kept at 1rem for readability as requested */
+        white-space: normal; /* Allow text to wrap within cells */
+        overflow: hidden; /* Hide any content that still overflows */
+        text-overflow: ellipsis; /* Add ellipsis (...) for overflowing text */
+    }
+
+    /* Set explicit widths for columns in the attendance input table */
+    #attendance-view .table-auto-cols th:nth-child(1),
+    #attendance-view .table-auto-cols td:nth-child(1) {
+        width: 30%; /* Width for the "משמרת" (shift) column */
+    }
+    #attendance-view .table-auto-cols th:nth-child(2),
+    #attendance-view .table-auto-cols td:nth-child(2),
+    #attendance-view .table-auto-cols th:nth-child(3),
+    #attendance-view .table-auto-cols td:nth-child(3),
+    #attendance-view .table-auto-cols th:nth-child(4),
+    #attendance-view .table-auto-cols td:nth-child(4),
+    #attendance-view .table-auto-cols th:nth-child(5),
+    #attendance-view .table-auto-cols td:nth-child(5) {
+        width: 17.5%; /* Width for the four status columns (לא ידוע, חלקי, נעדר, נוכח) */
+    }
+
+    /* Override for specific columns that should break text (less critical now but kept for consistency) */
     .names-table .py-3.px-4.text-sm.whitespace-normal {
         white-space: normal; /* Ensure text wraps for names on small screens */
     }
 
-    /* Adjust padding for labels containing radio buttons */
+    /* Adjust padding for labels containing radio buttons for tighter fit */
     .radio-label {
-        padding: 0.25rem; /* Smaller padding for radio button labels */
+        padding: 0.1rem; /* Even smaller padding for radio button labels */
     }
 }
