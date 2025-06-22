@@ -53,12 +53,14 @@ img, video, canvas {
     .table-auto-cols td {
         padding-left: 0.25rem; /* px-1 */
         padding-right: 0.25rem; /* px-1 */
-        font-size: 0.875rem; /* Changed to text-sm (0.875rem) for table cells on mobile */
+        font-size: 1rem; /* Increased to 1rem (base font size) for better readability on mobile */
+        white-space: normal; /* Allow text to wrap within cells to prevent horizontal scrolling */
     }
 
     /* Override for specific columns that should break text */
+    /* This rule is now less critical as white-space: normal is applied globally to table cells */
     .names-table .py-3.px-4.text-sm.whitespace-normal {
-        white-space: normal; /* Allow text to wrap for names on small screens */
+        white-space: normal; /* Ensure text wraps for names on small screens */
     }
 
     /* Adjust padding for labels containing radio buttons */
